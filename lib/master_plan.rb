@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'set'
-require_relative "masterplan/version"
+require_relative "master_plan/version"
 
 ##
 # Main configuration object.  Walks up the file tree looking for masterplan
@@ -24,14 +24,14 @@ require_relative "masterplan/version"
 # Additionally, there is a directive (`see_other`) that allows for masterplan
 # files outside of the lookup tree to be loaded.
 #
-# See {DSL} for a full list of the commands provided by Masterplan and a sample
+# See {DSL} for a full list of the commands provided by MasterPlan and a sample
 # masterplan file.
-class Masterplan
+class MasterPlan
   class Error < StandardError; end
 
   class MissingConfigurationError < Error
     def initialize(attribute)
-      super "#{attribute} has not been defined.  Call `configure :#{attribute}[, value]` in a `#{Masterplan::PLANFILE}` to set it."
+      super "#{attribute} has not been defined.  Call `configure :#{attribute}[, value]` in a `#{MasterPlan::PLANFILE}` to set it."
     end
   end
 
@@ -130,7 +130,7 @@ class Masterplan
   # See the .masterplan file in the root of this repo for a full example of
   # the available options.
   class DSL
-    # @param config [Masterplan] the configuration object used by the DSL
+    # @param config [MasterPlan] the configuration object used by the DSL
     # @param filename [String] the path to the masterplan to be loaded
     def initialize(config, filename)
       @config = config
@@ -185,7 +185,7 @@ class Masterplan
     def configure(attribute, value=nil, &block)
       attribute, value = attribute.first if attribute.is_a? Hash
 
-      Masterplan.add_attribute(attribute)
+      MasterPlan.add_attribute(attribute)
       @config.public_send "#{attribute}=", value, &block
     end
     alias_method :set, :configure

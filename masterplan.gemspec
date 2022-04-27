@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/masterplan/version"
+require_relative "lib/master_plan/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "masterplan"
-  spec.version       = Masterplan::VERSION
+  spec.name          = "master-plan"
+  spec.version       = MasterPlan::VERSION
   spec.authors       = ["Chris Hall"]
   spec.email         = ["chall8908@gmail.com"]
 
