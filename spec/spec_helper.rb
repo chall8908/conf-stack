@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "master_plan"
+require "conf-stack"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

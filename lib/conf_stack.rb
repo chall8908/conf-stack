@@ -1,45 +1,43 @@
 # frozen_string_literal: true
 
 require 'set'
-require_relative "master_plan/version"
+require_relative "conf_stack/version"
 
 ##
-# Main configuration object.  Walks up the file tree looking for masterplan
+# Main configuration object.  Walks up the file tree looking for configuration
 # files and loading them to build a the configuration.
 #
-# These masterplan files are loaded starting from the current working directory
-# and traversing up until a masterplan with a `at_project_root` directive or
-# or the directory specified by a `project_root` directive is reached.
+# These configuarion files are loaded starting from the current working directory
+# and traversing up until a file with a `at_project_root` directive or the directory
+# specified by a `project_root` directive is reached.
 #
 # Configuration options set with `configure` are latched once set to something
-# non-nil.  This, along with the aforementioned load order of masterplan files,
-# means that masterplan files closest to the source of your invokation will
-# "beat" other masterplan files.
+# non-nil.  This, along with the aforementioned load order of configuration files,
+# means that configuration files closest to the source of your invokation will
+# "beat" other configuration files.
 #
-# A global masterplan located at $HOME/.masterplan (or equivalent) is loaded
-# _last_.  You can use this to specify plans you want accessible everywhere
-# or global configuration that should apply everywhere (unless overridden by
-# more proximal masterplans).
+# A global configuration located at $HOME/.confstack is loaded _last_.  You can
+# use this to specify plans you want accessible everywhere or global configuration
+# that should apply everywhere (unless overridden by more proximal files).
 #
-# Additionally, there is a directive (`see_other`) that allows for masterplan
+# Additionally, there is a directive (`see_other`) that allows for configuration
 # files outside of the lookup tree to be loaded.
 #
-# See {DSL} for a full list of the commands provided by MasterPlan and a sample
-# masterplan file.
-class MasterPlan
+# See {DSL} for a full list of the commands provided by ConfStack.
+class ConfStack
   class Error < StandardError; end
 
   class MissingConfigurationError < Error
-    def initialize(attribute)
-      super "#{attribute} has not been defined.  Call `configure :#{attribute}[, value]` in a `#{MasterPlan::PLANFILE}` to set it."
+    def initialize(attribute, filename)
+      super "#{attribute} has not been defined.  Call `configure :#{attribute}[, value]` in a `#{filename}` to set it."
     end
   end
 
-  # Filename of masterplan files
-  PLANFILE = '.masterplan'
-
-  # Path to the top-level masterplan
-  MASTER_PLAN = File.join(Dir.home, PLANFILE)
+  class InvalidDirectoryError < Error
+    def initialize(message, directory)
+      super "#{message}:  #{directory} does not exist or is not a directory"
+    end
+  end
 
   # Adds an arbitrary attribute given by +attribute+ to the configuration class
   #
@@ -71,24 +69,26 @@ class MasterPlan
   end
 
   # Specifies the directory that is the root of your project.
-  # This directory is where Mastermind will stop looking for more
-  # masterplans, so it's important that it be set.
+  # This directory is where ConfStack will stop looking for more
+  # files, so it's important that it be set.
   add_attribute :project_root
 
-  def initialize
-    @loaded_masterplans = Set.new
+  # @param filename [String] the filename to look for to build configuration
+  def initialize(filename: '.confstack')
+    @filename = filename
+    @loaded_conf_files = Set.new
 
-    lookup_and_load_masterplans
-    load_masterplan MASTER_PLAN
+    lookup_and_load_configuration_files
+    load_configuration_file File.join(Dir.home, @filename)
   end
 
-  # Loads a masterplan using the DSL, if it exists and hasn't been loaded already
+  # Loads a config file using the DSL, if it exists and hasn't been loaded already
   #
-  # @param filename [String] the path to the masterplan to load
+  # @param filename [String] the path to the config file to load
   # @return [Void]
-  def load_masterplan filename
-    if File.exists? filename and !@loaded_masterplans.include? filename
-      @loaded_masterplans << filename
+  def load_configuration_file filename
+    if File.exists? filename and !@loaded_conf_files.include? filename
+      @loaded_conf_files << filename
       DSL.new(self, filename)
     end
 
@@ -109,41 +109,38 @@ class MasterPlan
 
     super
   rescue NoMethodError
-    raise MissingConfigurationError, symbol
+    raise MissingConfigurationError.new(symbol, @filename)
   end
 
-  # Walks up the file tree looking for masterplans.
+  # Walks up the file tree looking for configuration files.
   #
   # @return [Void]
-  def lookup_and_load_masterplans
-    load_masterplan File.join(Dir.pwd, PLANFILE)
+  def lookup_and_load_configuration_files
+    load_configuration_file File.join(Dir.pwd, @filename)
 
     # Walk up the tree until we reach the project root, the home directory, or
     # the root directory
     unless [project_root, Dir.home, '/'].include? Dir.pwd
-      Dir.chdir('..') { lookup_and_load_masterplans }
+      Dir.chdir('..') { lookup_and_load_configuration_files }
     end
   end
 
-  # Describes the DSL used in masterplan files.
-  #
-  # See the .masterplan file in the root of this repo for a full example of
-  # the available options.
+  # Describes the DSL used in configuration files.
   class DSL
-    # @param config [MasterPlan] the configuration object used by the DSL
-    # @param filename [String] the path to the masterplan to be loaded
+    # @param config [ConfStack] the configuration object used by the DSL
+    # @param filename [String] the path to the configuration file to be loaded
     def initialize(config, filename)
       @config = config
       @filename = filename
       instance_eval(File.read(filename), filename, 0) if File.exists? filename
     end
 
-    # Specifies that another masterplan should also be loaded when loading
-    # this masterplan.  NOTE: This _immediately_ loads the other masterplan.
+    # Specifies that another file should also be loaded when loading
+    # this file.  NOTE: This _immediately_ loads the other file.
     #
-    # @param filename [String] the path to the masterplan to be loaded
+    # @param filename [String] the path to the file to be loaded
     def see_also(filename)
-      @config.load_masterplan(File.expand_path(filename))
+      @config.load_configuration_file(File.expand_path(filename))
     end
 
     # Specifies the root of the project.
@@ -160,7 +157,7 @@ class MasterPlan
     end
 
     # Syntactic sugar on top of `project_root` to specify that the current
-    # masterplan resides in the root of the project.
+    # file resides in the root of the project.
     #
     # @see project_root
     def at_project_root
@@ -185,7 +182,7 @@ class MasterPlan
     def configure(attribute, value=nil, &block)
       attribute, value = attribute.first if attribute.is_a? Hash
 
-      MasterPlan.add_attribute(attribute)
+      ConfStack.add_attribute(attribute)
       @config.public_send "#{attribute}=", value, &block
     end
     alias_method :set, :configure

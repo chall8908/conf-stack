@@ -1,17 +1,16 @@
-# Masterplan
+# ConfStack
 
-Masterplan is a hierarchical configuration management gem.  This gem is cloned
-out of [cli-mastermind](https://github.com/chall8908/cli-mastermind).
+ConfStack is a hierarchical configuration management library.
 
 ## Usage
 
-Masterplan configuration is loaded from `.masterplan` files using a minimal DSL.
+ConfStack configuration is loaded from `.confstack` files using a minimal DSL.
+The name of this file is configurable when creating the configuration object by
+passing a `filename:` argument (e.g. `ConfStack.new filename: 'my-cool-config'`).
 
-For a fully annotated `.masterplan` see [cli-mastermind's configuration](https://github.com/chall8908/cli-mastermind/blob/master/.masterplan).
-
-Masterplan looks for and evaluates `.masterplan` files recursively up the file
+ConfStack looks for and evaluates `.confstack` files recursively up the file
 tree until it reaches the root of your project, if defined, or your home directory,
-if it's not.  Additionally, it always looks for and attempts to load a `.masterplan`
+if it's not.  Additionally, it always looks for and attempts to load a `.confstack`
 file in your home directory, if one exists.
 
 In this way, configuration for your tools can live where it makes the most sense
@@ -31,29 +30,29 @@ configure :some_value, 'foo'
 configure(:lazy_load) { "some_value is #{some_value}" }
 configure lazy_load: proc { "some value is #{some_value}" }
 
-see_also 'path/to/other/masterplan'
+see_also 'path/to/other/configuration'
 ```
 
-#### Masterplan DSL
+### ConfStack DSL
 
-##### `project_root [directory]`
+#### `project_root [directory]`
 
 Specifies the root of your project.  Must be specified to prevent Mastermind
 from scanning more of your file system than it needs to.  The easiest way to
-do this is to just specify `at_project_root` in a `.masterplan` file in the
+do this is to just specify `at_project_root` in a `.confstack` file in the
 actual root of your project.
 
 ----
 
-##### `at_project_root`
+#### `at_project_root`
 
-Syntactic sugar for specifying that the current `.masterplan` is in the root of your repository.
+Syntactic sugar for specifying that the current `.confstack` is in the root of your repository.
 
 It's equivalent to `project_root __dir__`.
 
 ----
 
-##### `configure attribute [value] [&block]`
+#### `configure attribute [value] [&block]`
 
 Alias: `set`
 
@@ -63,14 +62,14 @@ This command has two forms that are otherwise identical:
 * `configure attribute: value # attribute and value as key: value of a hash`
 
 Used to set arbitrary configuration options.  When a configuration option is
-set in multiple `.masterplan` files, the "closest" one to your invocation wins.
-In other words, since Mastermind reads `.masterplan` files starting in your
-current directory and working it's way "up" the hierarchy, the first `.masterplan`
+set in multiple `.confstack` files, the "closest" one to your invocation wins.
+In other words, since Mastermind reads `.confstack` files starting in your
+current directory and working it's way "up" the hierarchy, the first `.confstack`
 that specifies a configuration option "wins".
 
 When provided a block, the value is computed the first time the option is called
 for.  The block runs in the context of the `Configuration` object built up by
-all the loaded `.masterplan` files, so it has access to all previously set
+all the loaded `.confstack` files, so it has access to all previously set
 configuration options.
 
 The block is only executed once.  After that, the value is cached so that it
@@ -81,10 +80,10 @@ is stored.
 
 ----
 
-##### `see_also filename`
+#### `see_also filename`
 
 Instructs Mastermind to also load the configuration specified in `filename`.
-This file does _not_ have to be named `.masterplan` but _does_ have to conform
+This file does _not_ have to be named `.confstack` but _does_ have to conform
 to the syntax outlined here.
 
 ## Installation
@@ -92,7 +91,7 @@ to the syntax outlined here.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'masterplan'
+gem conf-stack'
 ```
 
 And then execute:
@@ -101,7 +100,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install masterplan
+    $ gem install conf-stack
 
 ## Development
 
@@ -111,7 +110,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/chall8908/masterplan.
+Bug reports and pull requests are welcome on GitHub at https://github.com/chall8908/conf-stack.
 
 ## License
 

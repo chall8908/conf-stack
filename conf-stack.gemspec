@@ -1,22 +1,22 @@
 # frozen_string_literal: true
 
-require_relative "lib/master_plan/version"
+require_relative "lib/conf_stack/version"
 
 Gem::Specification.new do |spec|
-  spec.name          = "master-plan"
-  spec.version       = MasterPlan::VERSION
+  spec.name          = "conf-stack"
+  spec.version       = ConfStack::VERSION
   spec.authors       = ["Chris Hall"]
   spec.email         = ["chall8908@gmail.com"]
 
   spec.summary       = "Hierarchical configuration management"
   # spec.description   = "Hierarchical configuration management"
-  spec.homepage      = "https://github.com/chall8908/masterplan"
+  spec.homepage      = "https://github.com/chall8908/conf_stack"
   spec.license       = "MIT"
   spec.required_ruby_version = ">= 2.4.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/chall8908/masterplan"
-  spec.metadata["changelog_uri"] = "https://github.com/chall8908/masterplan"
+  spec.metadata["source_code_uri"] = "https://github.com/chall8908/conf_stack"
+  spec.metadata["changelog_uri"] = "https://github.com/chall8908/conf_stack"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.

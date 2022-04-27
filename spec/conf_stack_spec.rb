@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-RSpec.describe MasterPlan do
+RSpec.describe ConfStack do
   it "has a version number" do
-    expect(MasterPlan::VERSION).not_to be nil
+    expect(described_class::VERSION).not_to be nil
   end
 
   context 'Custom Attributes' do
@@ -55,7 +55,7 @@ RSpec.describe MasterPlan do
     end
 
     it 'throws a MissingConfigurationError when configuration is missing' do
-      expect { config.not_set }.to raise_error(MasterPlan::MissingConfigurationError)
+      expect { config.not_set }.to raise_error(described_class::MissingConfigurationError)
     end
   end
 
