@@ -41,9 +41,6 @@ class Masterplan
   # Path to the top-level masterplan
   MASTER_PLAN = File.join(Dir.home, PLANFILE)
 
-  # The set of planfiles to load
-  attr_reader :plan_files
-
   # Adds an arbitrary attribute given by +attribute+ to the configuration class
   #
   # @param attribute [String,Symbol] the attribute to define
@@ -76,34 +73,11 @@ class Masterplan
   # masterplans, so it's important that it be set.
   add_attribute :project_root
 
-  # @param base_path [String,nil] plans outside of the base path will be ignored
-  def initialize(base_path=nil)
-    @base_path = base_path
+  def initialize
     @loaded_masterplans = Set.new
-    @plan_files = Set.new
-    @ask_for_confirmation = true
-
-    # If no alias exists for a particular value, return that value
-    @aliases = Hash.new { |_,k| k }
 
     lookup_and_load_masterplans
     load_masterplan MASTER_PLAN
-  end
-
-  # Adds a set of filenames for plans into the set of +@plan_files+.
-  #
-  # Plans with paths outside the +@base_path+, if set, will be ignored.
-  #
-  # @param planfiles [Array<String>] new planfiles to add to the set of planfiles
-  # @return [Void]
-  def add_plans(planfiles)
-    allowed_plans = if @base_path.nil?
-                      planfiles
-                    else
-                      planfiles.select { |file| file.start_with? @base_path }
-                    end
-
-    @plan_files.merge(allowed_plans)
   end
 
   # Loads a masterplan using the DSL, if it exists and hasn't been loaded already
@@ -115,37 +89,6 @@ class Masterplan
       @loaded_masterplans << filename
       DSL.new(self, filename)
     end
-  end
-
-  # Defines a user alias
-  #
-  # @param alias_from [String] the string to be replaced during expansion
-  # @param alias_to [String, Array<String>] the expanded argument
-  # @return [Void]
-  def define_alias(alias_from, alias_to)
-    arguments = alias_to.split(' ') if alias_to.is_a? String
-
-    @aliases[alias_from] = arguments unless @aliases.has_key? alias_from
-  end
-
-  # Maps an input string to an alias.
-  #
-  # @param input [String] the value to be replaced
-  # @return [String,Array<String>] the replacement alias or the input, if no replacement exists
-  def map_alias(input)
-    @aliases[input]
-  end
-
-  # @return [Boolean] the user's ask_for_confirmation setting
-  def ask?
-    @ask_for_confirmation
-  end
-
-  # Sets +@ask_for_confirmation+ to `false`.
-  #
-  # @return [false]
-  def skip_confirmation!
-    @ask_for_confirmation = false
   end
 
   private
@@ -220,39 +163,6 @@ class Masterplan
       project_root File.dirname(@filename)
     end
 
-    # Specify that plans exist in the given +directory+.
-    # Must be a valid directory.
-    #
-    # @param directory [String] path to a directory containing planfiles
-    # @raise [InvalidDirectoryError] if +directory+ is not a directory
-    def plan_files(directory)
-      unless Dir.exist? directory
-        raise InvalidDirectoryError.new('Invalid plan file directory', directory)
-      end
-
-      planfiles = Dir.glob(File.join(directory, '**', "*{#{supported_extensions}}"))
-      planfiles.map! { |file| File.expand_path(file) }
-
-      @config.add_plans(planfiles)
-    end
-
-    # Syntactic sugar on top of `plan_files` to specify that plans exist in
-    # a +plans/+ directory in the current directory.
-    #
-    # @see plan_files
-    def has_plan_files
-      plan_files File.join(File.dirname(@filename), 'plans')
-    end
-
-    # Specifies that a specific plan file exists at the given +filename+.
-    #
-    # @param files [Array<String>] an array of planfile paths
-    def plan_file(*files)
-      files = files.map { |file| File.expand_path file }
-
-      @config.add_plans(files)
-    end
-
     # Add arbitrary configuration attributes to the configuration object.
     # Use this to add plan specific configuration options.
     #
@@ -275,29 +185,5 @@ class Masterplan
       @config.public_send "#{attribute}=", value, &block
     end
     alias_method :set, :configure
-
-    # Define a user alias.  User aliases are expanded as part of plan selection.
-    # @see ArgParse#do_command_expansion!
-    #
-    # @param name [String] the string to be replaced
-    # @param arguments [String,Array<String>] the replacement
-    def define_alias(name, arguments)
-      @config.define_alias(name, arguments)
-    end
-
-    # SKip confirmation before plan execution.
-    # Identical to -A.
-    def skip_confirmation
-      @config.skip_confirmation!
-    end
-
-    private
-
-    # Used during planfile loading with a Dir.glob to load only supported planfiles
-    #
-    # @return [String] a comma separated list of supported file extensions
-    def supported_extensions
-      Loader.supported_extensions.join(',')
-    end
   end
 end
