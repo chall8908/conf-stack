@@ -66,6 +66,8 @@ class Masterplan
     define_method "#{attribute}?" do
       true
     end
+
+    nil
   end
 
   # Specifies the directory that is the root of your project.
@@ -89,6 +91,8 @@ class Masterplan
       @loaded_masterplans << filename
       DSL.new(self, filename)
     end
+
+    nil
   end
 
   private
