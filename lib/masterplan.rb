@@ -185,5 +185,15 @@ class Masterplan
       @config.public_send "#{attribute}=", value, &block
     end
     alias_method :set, :configure
+
+    # The following methods are maintained for backwards compatability with
+    # .masterplan files used by Mastermind
+    def backward_compatability(*args, **kwargs)
+    end
+    alias_method :plan_files, :backward_compatability
+    alias_method :has_plan_files, :backward_compatability
+    alias_method :plan_file, :backward_compatability
+    alias_method :define_alias, :backward_compatability
+    alias_method :skip_confirmation, :backward_compatability
   end
 end

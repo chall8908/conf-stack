@@ -53,6 +53,10 @@ RSpec.describe Masterplan do
         config.test_attribute
       end
     end
+
+    it 'throws a MissingConfigurationError when configuration is missing' do
+      expect { config.not_set }.to raise_error(Masterplan::MissingConfigurationError)
+    end
   end
 
   context 'DSL' do
@@ -70,6 +74,16 @@ RSpec.describe Masterplan do
         dsl.configure(test: 'foo')
 
         expect(config.test).to eq 'foo'
+      end
+    end
+
+    context 'backward compatability' do
+      it 'allows Mastermind-specific methods' do
+        expect(dsl).to respond_to(:plan_files)
+        expect(dsl).to respond_to(:has_plan_files)
+        expect(dsl).to respond_to(:plan_file)
+        expect(dsl).to respond_to(:define_alias)
+        expect(dsl).to respond_to(:skip_confirmation)
       end
     end
   end
