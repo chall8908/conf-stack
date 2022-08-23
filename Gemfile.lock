@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    conf-stack (1.0.0)
+    conf-stack (1.0.1)
 
 GEM
   remote: https://rubygems.org/
