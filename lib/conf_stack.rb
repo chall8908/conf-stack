@@ -105,11 +105,15 @@ class ConfStack
   # accessing non-existant configuration can lead to unhelpful NoMethodErrors.  This replaces
   # those errors with more helpful errors.
   def method_missing(symbol, *args)
-    return false if symbol.to_s.ends_with? '?'
+    return false if symbol.to_s.end_with? '?'
 
     super
   rescue NoMethodError
     raise MissingConfigurationError.new(symbol, @filename)
+  end
+
+  def respond_to_missing?(symbol, include_private = false)
+    symbol.to_s.end_with? '?' || super
   end
 
   # Walks up the file tree looking for configuration files.

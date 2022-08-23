@@ -21,6 +21,11 @@ RSpec.describe ConfStack do
       expect(config).to respond_to :'test_attribute?'
     end
 
+    it 'responds to checkers for unset attributes' do
+      expect(config).to respond_to :'unset_attribute?'
+      expect(config.unset_attribute?).to eq false
+    end
+
     it 'only allows a custom attribute to be set once' do
       config.test_attribute = 'expected'
       config.test_attribute = 'ignored'
